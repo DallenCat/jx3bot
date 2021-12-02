@@ -3,6 +3,7 @@ const Jx3api = require('../service/httpApi/jx3api');
 const xfs = require('../assets/json/xf.json');
 const xfids = require('../assets/json/xfid.json');
 const CqHttp = require('../service/cqhttp');
+const filters = require("../filters/index")
 
 module.exports = class MacroHandler {
     async handle(ctx) {
@@ -10,6 +11,7 @@ module.exports = class MacroHandler {
         let redis_key = `Macro:${JSON.stringify(args)}`;
         let result = await bot.redis.get(redis_key);
         if (result == null) {
+            args.xf = filters.xf_filter(args.xf)
             let kungfu = xfs[args.xf];
             if (kungfu == undefined) {
                 throw `错误：未知的心法 ${args.xf}`;
@@ -18,32 +20,32 @@ module.exports = class MacroHandler {
             //根据rank 判断从jx3api获取数据还是从jx3box获取数据
             //-1从jx3api拿，0从jx3box的宏推荐拿，1-10从jx3box的宏排名拿
             let macroId;
-            if(args.rank < 1) {
-                if(args.rank == -1) {
+            if (args.rank < 1) {
+                if (args.rank == -1) {
                     let data = await Jx3api.macro(args.xf);
                     result = `咕bot ${data.name} 宏 来源jx3api
                     ------
                     ${data.content}
                     ------
                     ${data.talents}`;
-                }else if(args.rank == 0) {
+                } else if (args.rank == 0) {
                     let recommandList = await Jx3box.macroRecommand();
                     macroId = recommandList.filter((macro) => (macro.icon == kungfu.icon))[0];
                     //如果找不到推荐宏的话就直接从排行榜取
-                    if(macroId == undefined) {
+                    if (macroId == undefined) {
                         ctx.args.rank = 1;
                         return await this.handle(ctx);
                     }
                     macroId = parseInt(macroId.link.match(/\/macro\/(\d+)/)[1]);
                 }
-            }else{
+            } else {
                 let rank = await Jx3box.macroTops(kungfuid);
                 rank = rank[args.rank - 1];
                 macroId = rank.pid
             }
             //如果result已经有值了就跳过这一段代码
             //否则说明macroId已经有值，需要根据postId从jx3box解析对应宏
-            if(result == null){
+            if (result == null) {
                 let post = await Jx3box.macroContent(macroId);
                 let macros = post.post_meta.data.map(async (macro) => {
                     let talents;
@@ -52,11 +54,11 @@ module.exports = class MacroHandler {
                             let talent = JSON.parse(macro.talent);
                             let redis_talent_key = `Talent:${talent.xf}_${talent.version}`
                             let talentList = await bot.redis.get(redis_talent_key);
-                            if(talentList == null) {
+                            if (talentList == null) {
                                 talentList = await Jx3box.talentsList(talent.version || 'v20201030');
                                 talentList = talentList[talent.xf];
                                 await bot.redis.set(redis_talent_key, JSON.stringify(talentList));
-                            }else{
+                            } else {
                                 talentList = JSON.parse(talentList);
                             }
                             talents = talent.sq.split(',');
@@ -77,7 +79,7 @@ module.exports = class MacroHandler {
                         content: macro.macro
                     };
                 });
-                for(let m in macros) {
+                for (let m in macros) {
                     macros[m] = await macros[m];
                 }
                 let data = {

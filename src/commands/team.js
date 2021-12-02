@@ -4,6 +4,7 @@ const allxf = require('../assets/json/xf.json');
 const allxfid = require('../assets/json/xfid.json');
 const allschool = require('../assets/json/school.json')
 const CqHttp = require('../service/cqhttp');
+const filters = require("../filters/index")
 
 module.exports = class TeamHandler {
     static demandPermission = true;
@@ -108,6 +109,7 @@ module.exports = class TeamHandler {
         if (!ctx.data.group_id) throw '该命令仅限群内使用';
         let group_id = ctx.data.group_id;
         let team_id = args.team_id;
+        args.xf = filters.xf_filter(args.xf)
         let _xf = args.xf;
         let xf = allxf[_xf];
         if (xf == undefined) {

@@ -1,28 +1,28 @@
 const yargs_parser = require('yargs-parser');
 const moment = require('moment');
 
-class Bot{
+class Bot {
     constructor(ENV) {
         this.ENV = ENV;
     }
 
     log(message, type) {
         type = type || 'info';
-        message = typeof message == 'object' ? JSON.stringify(message, null ,4) : message;
+        message = typeof message == 'object' ? JSON.stringify(message, null, 4) : message;
         let msg = `[${moment().locale('zh-cn').format('YYYY-MM-DD HH:mm:ss')}][${type.toUpperCase().padStart(7)}]${message}`;
-        if(type == 'verbose') {
+        if (type == 'verbose') {
             msg = msg.gray;
         }
-        if(type == 'info') {
+        if (type == 'info') {
             msg = msg.white
         }
-        if(type == 'success') {
+        if (type == 'success') {
             msg = msg.green;
         }
-        if(type == 'warn') {
+        if (type == 'warn') {
             msg = msg.yellow;
         }
-        if(type == 'error') {
+        if (type == 'error') {
             msg = msg.red;
         }
         console.log(msg);
@@ -31,7 +31,7 @@ class Bot{
     async initRedis() {
         let env = this.ENV.redis;
         let bot = this;
-        if(env.enable){
+        if (env.enable) {
             const redis = require('async-redis');
             const client = redis.createClient({
                 host: env.host || 'localhost',
@@ -41,7 +41,7 @@ class Bot{
                 bot.log("Redis Error: " + err);
             });
             this.redis = client;
-        }else{
+        } else {
             this.redis = new Proxy({}, {
                 get: () => (async () => null),
             });
@@ -64,12 +64,17 @@ class Bot{
 
     async initImageGenerator() {
         let enable = this.ENV.enable_puppeteer;
-        if(enable) {
+        if (enable) {
+            const pathToExtension = "/usr/local/gubot/node_modules/puppeteer/.local-chromium/linux-818858/chrome-linux/chrome"
             const ImageGenerator = require('./imageGenerator');
             const puppeteer = require('puppeteer');
-            const browser = await puppeteer.launch();
+            const browser = await puppeteer.launch({
+                executablePath: pathToExtension,
+                headless: true,
+                args: ['--disable-infobars', '--no-sandbox', '--disable-setuid-sandbox']
+            });
             this.imageGenerator = new ImageGenerator(browser);
-        }else{
+        } else {
             this.imageGenerator = new Proxy({}, {
                 get: () => (async () => `${__dirname}/../assets/images/error/image_generator_disable.jpg`),
             });
@@ -81,9 +86,9 @@ class Bot{
         let env = this.ENV.cqhttp_websockets;
         this.cqhttps = [];
         const Cqhttp = require('./cqhttp');
-        for(let cqhttp_config of env){
+        for (let cqhttp_config of env) {
             let cqhttp = new Cqhttp(cqhttp_config, this);
-            cqhttp.onMessage = function() {
+            cqhttp.onMessage = function () {
 
             }
             this.cqhttps.push(cqhttp);
@@ -102,34 +107,34 @@ class Bot{
         let bot = this;
         this.jx3api_ws.handleMessageStack.push(async (message) => {
             message = JSON.parse(message);
-            if(message.type == 2001 && message.data.status == 1) {
+            if (message.type == 2001 && message.data.status == 1) {
                 let broadcast_msg = `咕咕咕！[${message.data.server}]开服啦！`;
-                for(let cqhttp of bot.cqhttps){
+                for (let cqhttp of bot.cqhttps) {
                     let groups = await cqhttp.getGroupList();
-                    for(let group of groups) {
-                        if(group.server_broadcast && group.server == message.data.server){
+                    for (let group of groups) {
+                        if (group.server_broadcast && group.server == message.data.server) {
                             cqhttp.sendGroupMessage(broadcast_msg, group.group_id);
                         }
                     }
                 }
             }
-            if(message.type == 2002) {
+            if (message.type == 2002) {
                 let broadcast_msg = `咕咕咕！[${message.data.date}]有新的[${message.data.type}]请查收！\n标题：${message.data.title}\n链接：${message.data.url}`;
-                for(let cqhttp of bot.cqhttps){
+                for (let cqhttp of bot.cqhttps) {
                     let groups = await cqhttp.getGroupList();
-                    for(let group of groups) {
-                        if(group.news_broadcast){
+                    for (let group of groups) {
+                        if (group.news_broadcast) {
                             cqhttp.sendGroupMessage(broadcast_msg, group.group_id);
                         }
                     }
                 }
             }
-            if(message.type == 2003) {
+            if (message.type == 2003) {
                 let broadcast_msg = `咕咕咕！${message.data.serendipity} 被 ${message.data.name} 抱回家啦~`;
-                for(let cqhttp of bot.cqhttps){
+                for (let cqhttp of bot.cqhttps) {
                     let groups = await cqhttp.getGroupList();
-                    for(let group of groups) {
-                        if(group.serendipity_broadcast && group.server == message.data.server){
+                    for (let group of groups) {
+                        if (group.serendipity_broadcast && group.server == message.data.server) {
                             if (!group.group_serendipity_broadcast || (group.group_serendipity_broadcast && group.members.indexOf(message.data.name) > -1)) {
                                 cqhttp.sendGroupMessage(broadcast_msg, group.group_id);
                             }
@@ -145,22 +150,22 @@ class Bot{
     }
 
     async handleRequest(request, cqhttp) {
-        try{
-            if(request.post_type == 'message') {
+        try {
+            if (request.post_type == 'message') {
                 let result;
-                if(request.message.split('')[0] == '/'){
+                if (request.message.split('')[0] == '/') {
                     result = await this.handleCommand(request, cqhttp);
-                }else{
+                } else {
                     result = await this.handleMessage(request, cqhttp);
                 }
-                if(result != null && result != undefined && result != ''){
+                if (result != null && result != undefined && result != '') {
                     return result;
                 }
             }
-            if(request.post_type == 'request') {
+            if (request.post_type == 'request') {
                 //加好友申请
-                if(request.request_type == 'friend') {
-                    if(!this.ENV.agree_friend_invite) {
+                if (request.request_type == 'friend') {
+                    if (!this.ENV.agree_friend_invite) {
                         return false;
                     }
                     this.log(`[${cqhttp.qq}] 接受了 ${request.user_id} 的加好友请求`, 'info')
@@ -174,8 +179,8 @@ class Bot{
                     }
                 }
                 //邀请入群
-                if(request.request_type == 'group' && request.sub_type == 'invite') {
-                    if(!this.ENV.agree_group_invite) {
+                if (request.request_type == 'group' && request.sub_type == 'invite') {
+                    if (!this.ENV.agree_group_invite) {
                         return false;
                     }
                     this.log(`[${cqhttp.qq}]接受了 ${request.user_id} 的邀请加入群 ${request.group_id} 的请求`, 'info')
@@ -185,7 +190,7 @@ class Bot{
                             group_id: request.group_id
                         }
                     });
-                    if(group == null) {
+                    if (group == null) {
                         group = await Group.create({
                             bot_id: request.self_id,
                             group_id: request.group_id,
@@ -204,14 +209,14 @@ class Bot{
                     };
                 }
                 //加群申请
-                if(request.request_type == 'group' && request.sub_type == 'add') {
+                if (request.request_type == 'group' && request.sub_type == 'add') {
                     const Group = require('../model/group');
                     let group = await Group.findOne({
                         where: {
                             group_id: request.group_id
                         }
                     });
-                    if(group == null) {
+                    if (group == null) {
                         group = await Group.create({
                             bot_id: request.self_id,
                             group_id: request.group_id,
@@ -219,8 +224,8 @@ class Bot{
                             server: '唯我独尊'
                         });
                     }
-                    if(group.accept_join_group != null) {
-                        if(request.comment && request.comment.indexOf(group.accept_join_group) != -1) {
+                    if (group.accept_join_group != null) {
+                        if (request.comment && request.comment.indexOf(group.accept_join_group) != -1) {
                             this.log(`[${cqhttp.qq}]接受了 ${request.user_id} 的申请加入群 ${request.group_id} 的请求`, 'info');
                             return {
                                 action: "set_group_add_request",
@@ -234,8 +239,8 @@ class Bot{
                     }
                 }
             }
-        }catch(e) {
-            if(typeof e == 'object') {
+        } catch (e) {
+            if (typeof e == 'object') {
                 this.log(e.stack || e, 'error');
             }
             return e;
@@ -250,8 +255,8 @@ class Bot{
             data: data,
             cqhttp: cqhttp
         }
-        if(this.route[command] != undefined) {
-            if(this.route[command].demandPermission){
+        if (this.route[command] != undefined) {
+            if (this.route[command].demandPermission) {
                 ctx['permission'] = await this.checkPermission(data);
             }
             let handler = new this.route[command]();
@@ -260,9 +265,9 @@ class Bot{
     }
 
     async handleMessage(data, cqhttp) {
-        if(data.group_id) {
+        if (data.group_id) {
             data.switchs = await this.checkFunctionSwitch(data.group_id);
-            if(!data.switchs.convenient) {
+            if (!data.switchs.convenient) {
                 return null;
             }
         }
@@ -333,26 +338,26 @@ class Bot{
             '^添加别名\\s([\\S\\s]+)': '/alias add $1',
             '^删除别名\\s([\\S\\s]+)': '/alias delete $1'
         };
-        if(data.group_id && data.switchs.chat) {
+        if (data.group_id && data.switchs.chat) {
             let nickname = await this.redis.get(`GroupNickname:${data.group_id}`);
-            if(nickname == null) {
+            if (nickname == null) {
                 const Group = require('../model/group');
-                nickname = (await Group.findOne({where: {group_id: data.group_id}})).nickname;
+                nickname = (await Group.findOne({ where: { group_id: data.group_id } })).nickname;
                 nickname = nickname ?? '咕咕';
                 await this.redis.set(`GroupNickname:${data.group_id}`, nickname);
             }
             nickname = nickname.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
             regex_map[`^(${nickname}说)\\s?([\\S\\s]+)$`] = '/talk $2';
             regex_map[`^(${nickname})\\s?([\\S\\s]+)$`] = '/chat $2';
-        }else{
+        } else {
             regex_map[`^(咕咕说)\\s?([\\S\\s]+)$`] = '/talk $2';
             regex_map[`^(咕咕)\\s?([\\S\\s]+)$`] = '/chat $2';
         }
 
         let message = data.message.trim();
-        for(let i in regex_map) {
+        for (let i in regex_map) {
             let regex = new RegExp(i);
-            if(regex.test(message)) {
+            if (regex.test(message)) {
                 data.message = message.replace(regex, regex_map[i]);
                 return await this.handleCommand(data, cqhttp);
             }
@@ -363,89 +368,89 @@ class Bot{
     async parseArgs(data) {
         const Alias = require('../model/alias');
         const Group = require('../model/group');
-        if(data.post_type == 'message' && data.message.split('')[0] == '/'){
+        if (data.post_type == 'message' && data.message.split('')[0] == '/') {
             let allArgs = yargs_parser(data.message);
             let defaultArgs = allArgs['_'];
             let _command = defaultArgs.shift().substr(1);
             let command = await Alias.get(_command, 'command', data.group_id);
-            if(command == _command) command = await Alias.get(command, 'command');
+            if (command == _command) command = await Alias.get(command, 'command');
             const getArg = async (arg, defaultArgs, allArgs, data) => {
                 let value = undefined;
-                if(allArgs != null && allArgs[arg.longArgs] != undefined) {
+                if (allArgs != null && allArgs[arg.longArgs] != undefined) {
                     value = allArgs[arg.longArgs];
                 }
-                if(value == undefined) {
+                if (value == undefined) {
                     value = defaultArgs[arg.defaultIndex - 1];
                 }
-                if(value == undefined || value == null || value == '-'){
-                    if(arg.nullable) {
+                if (value == undefined || value == null || value == '-') {
+                    if (arg.nullable) {
                         value = arg.default;
-                    }else{
+                    } else {
                         throw `Error: ${arg.displayName || arg.name || ''} 必填参数缺失，请使用/help命令查看命令用法`;
                     }
                 }
-                if(arg.type == 'server' && value == '-'){
-                    if(data.group_id) {
+                if (arg.type == 'server' && value == '-') {
+                    if (data.group_id) {
                         let group = await Group.findOne({
                             where: {
                                 group_id: data.group_id
                             }
                         });
-                        if(group != null) {
+                        if (group != null) {
                             value = group.server;
-                        }else{
+                        } else {
                             value = '唯我独尊'
                         }
-                    }else{
+                    } else {
                         value = '唯我独尊'
                     }
                 }
 
-                if(arg.alias != null && value != null) {
+                if (arg.alias != null && value != null) {
                     let _value = value;
                     value = await Alias.get(value, arg.alias, data.group_id);
-                    if(value == _value) value = await Alias.get(value, arg.alias, '*');
+                    if (value == _value) value = await Alias.get(value, arg.alias, '*');
                 }
-                if(arg.limit instanceof Object && arg.type == 'integer'){
-                    if(value < arg.limit.min || value > arg.limit.max){
+                if (arg.limit instanceof Object && arg.type == 'integer') {
+                    if (value < arg.limit.min || value > arg.limit.max) {
                         throw `错误: ${arg.displayName || arg.name || ''} 参数不符合规范，参数要求取值范围[${arg.limit.min}, ${arg.limit.max}](闭区间)\n请使用/help 命令查看命令用法`;
                     }
                 }
-                if(arg.limit instanceof Array && arg.type == 'string'){
-                    if(arg.limit.indexOf(`${value}`) == -1){
+                if (arg.limit instanceof Array && arg.type == 'string') {
+                    if (arg.limit.indexOf(`${value}`) == -1) {
                         throw `错误: ${arg.displayName || arg.name || ''} 参数不符合规范，参数要求取值为{${arg.limit.join(',')}}中的一个, 你输入了[${value}]\n请使用/help 命令查看命令用法`;
                     }
                 }
-                if(arg.limit && arg.limit.min != undefined && arg.limit.max != undefined && arg.type == 'string'){
-                    if(typeof value != 'string' || value.length < arg.limit.min || value.length > arg.limit.max){
+                if (arg.limit && arg.limit.min != undefined && arg.limit.max != undefined && arg.type == 'string') {
+                    if (typeof value != 'string' || value.length < arg.limit.min || value.length > arg.limit.max) {
                         throw `错误: ${arg.displayName || arg.name || ''} 参数不符合规范，参数要求字符串长度在[${arg.limit.min},${arg.limit.max}](闭区间)之间\n请使用/help 命令查看命令用法`;
                     }
                 }
                 return value;
             }
-            if(this.route[command] != undefined) {
+            if (this.route[command] != undefined) {
                 let argsList = this.route[command].argsList();
                 let args = {};
 
-                if(argsList instanceof Array) {
-                    try{
-                        for(let i in argsList) {
+                if (argsList instanceof Array) {
+                    try {
+                        for (let i in argsList) {
                             let value = await getArg(argsList[i], defaultArgs, allArgs, data);
                             args[argsList[i].name] = value;
                         }
-                    }catch(e) {
+                    } catch (e) {
                         throw e;
                     }
-                }else if(argsList instanceof Object){
-                    try{
+                } else if (argsList instanceof Object) {
+                    try {
                         let action = await getArg(argsList.action, defaultArgs, allArgs, data);
                         args[argsList.action.name] = action;
                         let branchArgsList = argsList.branch[action];
-                        for(let i in branchArgsList) {
+                        for (let i in branchArgsList) {
                             let value = await getArg(branchArgsList[i], defaultArgs, allArgs, data);
                             args[branchArgsList[i].name] = value;
                         }
-                    }catch(e) {
+                    } catch (e) {
                         throw e;
                     }
                 }
@@ -456,29 +461,29 @@ class Bot{
 
     async checkPermission(data) {
         const User = require('../model/user');
-        if(data.message_type == 'private') {
+        if (data.message_type == 'private') {
             let user = await User.findOne({
                 where: {
                     qq: data.user_id,
                     group: "*"
                 }
             })
-            if(user != null) {
+            if (user != null) {
                 return user.permissions;
-            }else{
+            } else {
                 return 1;
             }
-        }else if(data.message_type == 'group') {
+        } else if (data.message_type == 'group') {
             let user = await User.findOne({
                 where: {
                     qq: data.user_id,
                     group: data.group_id
                 }
             })
-            if(user != null) {
+            if (user != null) {
                 return user.permissions;
             }
-            if(data.sender && data.sender.role == 'owner'){
+            if (data.sender && data.sender.role == 'owner') {
                 await User.create({
                     qq: data.sender.user_id,
                     nickname: data.sender.card || data.sender.nickname || data.sender.user_id,
@@ -488,7 +493,7 @@ class Bot{
                 return 4;
             }
             return 1;
-        }else {
+        } else {
             return 0;
         }
     }
@@ -496,21 +501,21 @@ class Bot{
     async checkFunctionSwitch(group_id) {
         const Group = require('../model/group');
         let funcs = ['convenient', 'chat', 'server_broadcast', 'serendipity_broadcast', 'meme'];
-        if(group_id) {
+        if (group_id) {
             let group = null;
             let result = {};
-            for(let i in funcs) {
+            for (let i in funcs) {
                 let func = funcs[i];
                 let redis_key = `GroupFunc:${func}:${group_id}`;
                 let boolean = await this.redis.get(redis_key);
-                if(boolean == null){
-                    if(group == null) {
+                if (boolean == null) {
+                    if (group == null) {
                         group = await Group.findOne({
                             where: {
                                 group_id: group_id
                             }
                         });
-                        if(group == null) {
+                        if (group == null) {
                             group = await Group.create({
                                 group_id: group_id,
                                 server: '唯我独尊',
@@ -525,7 +530,7 @@ class Bot{
                 result[func] = boolean == 'true';
             }
             return result;
-        }else{
+        } else {
             return {};
         }
 

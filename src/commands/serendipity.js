@@ -22,7 +22,7 @@ module.exports = class SerendipityHandler {
                 serendipity = '';
             }
             let player = args.player;
-            if(player == '全部玩家') {
+            if (player == '全部玩家') {
                 player = '';
             }
             let searchKey = {
@@ -31,15 +31,15 @@ module.exports = class SerendipityHandler {
                 serendipity: ''
             }
             let datas = await Jx3box.serendipity(searchKey);
-            if(datas != null) {
+            if (datas != null) {
                 datas = datas.map((data) => ({
                     server: data.server,
                     player: data.name,
-                    type: (serendipityMap.filter((s) => (s.name == data.serendipity))[0] || {type: '未知奇遇'}).type,
+                    type: (serendipityMap.filter((s) => (s.name == data.serendipity))[0] || { type: '未知奇遇' }).type,
                     name: data.serendipity,
-                    time: moment(data.dwTime*1000).locale('zh-cn').format('YYYY-MM-DD HH:mm:ss')
+                    time: moment(data.dwTime * 1000).locale('zh-cn').format('YYYY-MM-DD HH:mm:ss')
                 }));
-            }else{
+            } else {
                 datas = [
                     {
                         server: '',

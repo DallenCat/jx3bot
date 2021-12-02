@@ -1,7 +1,15 @@
+/*
+ * @Descripttion: 
+ * @version: 
+ * @Author: dal
+ * @Date: 2021-12-02 10:15:58
+ * @LastEditors: dal
+ * @LastEditTime: 2021-12-02 13:24:16
+ */
 const Websocket = require('./websocket');
 const url = require('url');
 
-class CqHttp{
+class CqHttp {
     wsApi;
     wsEvent;
     bot;
@@ -9,32 +17,32 @@ class CqHttp{
     name;
 
     constructor(config, bot) {
-        this.ws = new Websocket(`${config.url}/${config.access_token ? '?access_token='+config.access_token : ''}`, `Ws:${config.name}`);
+        this.ws = new Websocket(`${config.url}/${config.access_token ? '?access_token=' + config.access_token : ''}`, `Ws:${config.name}`);
         this.name = config.name;
         this.qq = config.qq;
         this.bot = bot;
         let cqhttp = this;
-        this.ws.handleMessageStack.push(async function(message) {
-            try{
+        this.ws.handleMessageStack.push(async function (message) {
+            try {
                 let request = JSON.parse(message);
                 let result = await cqhttp.bot.handleRequest(request, cqhttp);
                 //object
-                if(typeof result == 'object') {
+                if (typeof result == 'object') {
                     cqhttp.send(result);
                 }
                 //string
-                if(typeof result == 'string') {
-                    if(request.message_type == 'group') {
+                if (typeof result == 'string') {
+                    if (request.message_type == 'group') {
                         let group_id = request.group_id;
                         cqhttp.sendGroupMessage(result, group_id);
                     }
-                    if(request.message_type == 'private') {
+                    if (request.message_type == 'private') {
                         let user_id = request.user_id;
                         cqhttp.sendPrivateMessage(result, user_id)
                     }
                 }
-            }catch(e) {
-                if(typeof e == 'object') {
+            } catch (e) {
+                if (typeof e == 'object') {
                     cqhttp.bot.log(message, 'error');
                     cqhttp.bot.log(e.stack || e, 'error');
                 }
@@ -52,7 +60,7 @@ class CqHttp{
         });
     }
 
-    sendGroupMessage(message, group_id){
+    sendGroupMessage(message, group_id) {
         this.send({
             action: "send_group_msg",
             params: {
@@ -78,7 +86,7 @@ class CqHttp{
         return groups;
     }
 
-    send(object){
+    send(object) {
         this.ws.sendJSON(object);
     }
 
