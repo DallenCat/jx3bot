@@ -1,3 +1,11 @@
+/*
+ * @Descripttion: 
+ * @version: 
+ * @Author: dal
+ * @Date: 2021-12-02 10:15:58
+ * @LastEditors: dal
+ * @LastEditTime: 2021-12-02 16:04:01
+ */
 module.exports = {
     help: require('./help'),
     group: require('./group'),
@@ -27,5 +35,7 @@ module.exports = {
     seniority: require('./seniority'),
     talk: require('./talk'),
     item: require('./item'),
-    chat: require('./chat')
+    chat: require('./chat'),
+    angry: require('./angry'),
+    happy: require('./happy')
 }

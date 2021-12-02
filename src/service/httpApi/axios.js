@@ -4,6 +4,8 @@ const { __next, __spider, __helperUrl, __ossRoot, __server } = require('@jx3box/
 const jx3tuilan_baseurl = bot.ENV.jx3tuilan_baseurl || '';
 const jx3api_baseurl = bot.ENV.jx3api_baseurl || 'https://jx3api.com';
 const xiaohei_url = 'https://www.j3price.top:8088/black-api/api';
+const happy = 'https://chp.shadiao.app/api.php'
+const zuanbot = 'https://zuanbot.com/api.php?level=min&lang=zh_cn'
 
 const $tuilan = axios.create({
     baseURL: `${jx3tuilan_baseurl}`,
@@ -86,3 +88,22 @@ const $xiaohei = axios.create({
     }
 });
 exports.$xiaohei = $xiaohei;
+
+const $happy = axios.create({
+    baseURL: happy,
+    headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36',
+        'Accept': 'application/json, text/plain, */*'
+    }
+});
+exports.$happy = $happy;
+
+const $zuanbot = axios.create({
+    baseURL: zuanbot,
+    headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36',
+        'Accept': 'application/json, text/plain, */*'
+    }
+});
+
+exports.$zuanbot = $zuanbot;

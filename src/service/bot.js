@@ -68,11 +68,12 @@ class Bot {
             const pathToExtension = "/usr/local/gubot/node_modules/puppeteer/.local-chromium/linux-818858/chrome-linux/chrome"
             const ImageGenerator = require('./imageGenerator');
             const puppeteer = require('puppeteer');
-            const browser = await puppeteer.launch({
-                executablePath: pathToExtension,
-                headless: true,
-                args: ['--disable-infobars', '--no-sandbox', '--disable-setuid-sandbox']
-            });
+            const browser = await puppeteer.launch();
+            // const browser = await puppeteer.launch({
+            //     executablePath: pathToExtension,
+            //     headless: true,
+            //     args: ['--disable-infobars', '--no-sandbox', '--disable-setuid-sandbox']
+            // });
             this.imageGenerator = new ImageGenerator(browser);
         } else {
             this.imageGenerator = new Proxy({}, {
@@ -248,6 +249,7 @@ class Bot {
     }
 
     async handleCommand(data, cqhttp) {
+        console.log(data)
         let [args, command] = await this.parseArgs(data) ?? [];
         let ctx = {
             command: command,
@@ -278,6 +280,8 @@ class Bot {
             '^骚话$': '/saohua',
             '^语音骚话$': '/saohuav',
             '^斗图$': '/doutu',
+            '^出警语录$': '/angry',
+            '^彩虹屁$': '/happy',
 
             '^帮助$': '/help',
             '^帮助\\s(\\S*)$': '/help $1',
