@@ -249,7 +249,6 @@ class Bot {
     }
 
     async handleCommand(data, cqhttp) {
-        console.log(data)
         let [args, command] = await this.parseArgs(data) ?? [];
         let ctx = {
             command: command,
