@@ -1,13 +1,17 @@
 const { $jx3api } = require('./axios');
+const ENV = require('../../../env.json');
 
-class Jx3api{
+
+class Jx3api {
     static apiDisplayName = 'JX3API';
 
     static async strengthen(xf) {
-        let response = await $jx3api.get('/app/heighten', {params:{
-            name: xf || "冰心诀"
-        }});
-        if(response.data.code == 200) {
+        let response = await $jx3api.get('/app/heighten', {
+            params: {
+                name: xf || "冰心诀"
+            }
+        });
+        if (response.data.code == 200) {
             let data = response.data.data.data;
             return {
                 增强小药: data.heighten_drug,
@@ -15,16 +19,18 @@ class Jx3api{
                 辅助小药: data.auxiliary_drug,
                 辅助小吃: data.auxiliary_food
             }
-        }else{
+        } else {
             throw `错误：[${Jx3api.apiDisplayName}]的接口[heighten]返回值异常，请检查参数。`;
         }
     }
 
     static async gest(xf) {
-        let response = await $jx3api.get('/app/matrix', {params:{
-            name: xf || "冰心诀"
-        }});
-        if(response.data.code == 200) {
+        let response = await $jx3api.get('/app/matrix', {
+            params: {
+                name: xf || "冰心诀"
+            }
+        });
+        if (response.data.code == 200) {
             let data = response.data.data;
             return {
                 name: data.name,
@@ -34,26 +40,28 @@ class Jx3api{
                 二重略懂: data.descs[1].desc,
                 三重巧熟: data.descs[2].desc,
                 四重精妙: data.descs[3].desc,
-                五重游刃: data.descs[4].desc, 
+                五重游刃: data.descs[4].desc,
                 六重忘我: data.descs[5].desc,
                 七重归一: '空'
             }
-        }else{
+        } else {
             throw `错误：[${Jx3api.apiDisplayName}]的接口[matrix]返回值异常，请检查参数。`;
         }
     }
 
     static async travel(map) {
-        let response = await $jx3api.get('/app/travel', {params:{
-            map: map || "七秀"
-        }});
-        if(response.data.code == 200) {
+        let response = await $jx3api.get('/app/travel', {
+            params: {
+                map: map || "七秀"
+            }
+        });
+        if (response.data.code == 200) {
             let data = response.data.data;
-            let result =  {
+            let result = {
                 time: response.data.time * 1000,
                 data: []
             }
-            for(let i in data){
+            for (let i in data) {
                 let cur = data[i];
                 result.data.push({
                     name: cur.name,
@@ -70,26 +78,43 @@ class Jx3api{
                 });
             }
             return result;
-        }else{
+        } else {
             throw `错误：[${Jx3api.apiDisplayName}]的接口[travel]返回值异常，请检查参数。`;
         }
     }
 
     static async saohua() {
         let response = await $jx3api.get('/app/random');
-        if(response.data.code == 200) {
+        if (response.data.code == 200) {
             let result = response.data.data.text;
             return result;
-        }else{
+        } else {
             throw `错误：[${Jx3api.apiDisplayName}]的接口[random]返回值异常。`;
         }
     }
 
+    static async nlpchat(nickname, question) {
+        let response = await $jx3api.get('/share/nlpchat', {
+            "secretId": ENV.tecentcloud_secretid,
+            "secretKey": ENV.tecentcloud_secretkey,
+            "name": nickname,
+            "question": question
+        });
+        if (response.data.code == 200) {
+            let result = response.data.data.answer;
+            return result;
+        } else {
+            throw `错误：[${Jx3api.apiDisplayName}]的接口[share/nlpchat]返回值异常。`;
+        }
+    }
+
     static async daily(server) {
-        let response = await $jx3api.get('/app/daily', {params:{
-            server: server || "唯我独尊",
-        }});
-        if(response.data.code == 200) {
+        let response = await $jx3api.get('/app/daily', {
+            params: {
+                server: server || "唯我独尊",
+            }
+        });
+        if (response.data.code == 200) {
             let data = response.data.data;
             let result = {
                 时间: data.date,
@@ -103,17 +128,19 @@ class Jx3api{
                 周常十人本: data.weekTeam,
                 周公共日常: data.weekPublic
             };
-            return result; 
-        }else{
+            return result;
+        } else {
             throw `错误：[${Jx3api.apiDisplayName}]的接口[daily]返回值异常，请检查参数。`;
         }
     }
 
-    static async gold(server){
-        let response = await $jx3api.get('/app/demon', {params:{
-            server: server || "唯我独尊",
-        }});
-        if(response.data.code == 200) {
+    static async gold(server) {
+        let response = await $jx3api.get('/app/demon', {
+            params: {
+                server: server || "唯我独尊",
+            }
+        });
+        if (response.data.code == 200) {
             let data = response.data;
             return {
                 time: data.time * 1000,
@@ -126,15 +153,17 @@ class Jx3api{
                 贴吧: data.data['tieba'],
 
             }
-        }else{
+        } else {
             throw `错误：[${Jx3api.apiDisplayName}]的接口[gold]返回值异常，请检查参数。`;
         }
     }
 
     static async furniture(name) {
-        let response = await $jx3api.get(`/app/furniture`, {params:{
-            name: name
-        }});
+        let response = await $jx3api.get(`/app/furniture`, {
+            params: {
+                name: name
+            }
+        });
         if (response.data.code == 200) {
             let data = response.data.data;
             return {
@@ -156,11 +185,13 @@ class Jx3api{
     }
 
     static async macro(name) {
-        let response = await $jx3api.get('/app/macro', {params:{
-            name: name
-        }});
+        let response = await $jx3api.get('/app/macro', {
+            params: {
+                name: name
+            }
+        });
         let data = response.data;
-        if(data.code != 200) {
+        if (data.code != 200) {
             throw `错误：[${Jx3api.apiDisplayName}]的接口[macro]返回异常，请检查参数`;
         }
         data = data.data;
@@ -173,7 +204,7 @@ class Jx3api{
     }
 
     static async seniority(params) {
-        let response = await $jx3api.get(`/app/seniority`, {params: params});
+        let response = await $jx3api.get(`/app/seniority`, { params: params });
         if (response.data.code == 200) {
             return response.data.data.map((data) => ({
                 avatar: `${__dirname}/../../assets/images/school/${data.sect}.png`,

@@ -68,12 +68,12 @@ class Bot {
             const pathToExtension = "/usr/local/gubot/node_modules/puppeteer/.local-chromium/linux-818858/chrome-linux/chrome"
             const ImageGenerator = require('./imageGenerator');
             const puppeteer = require('puppeteer');
-            const browser = await puppeteer.launch();
-            // const browser = await puppeteer.launch({
-            //     executablePath: pathToExtension,
-            //     headless: true,
-            //     args: ['--disable-infobars', '--no-sandbox', '--disable-setuid-sandbox']
-            // });
+            // const browser = await puppeteer.launch();
+            const browser = await puppeteer.launch({
+                executablePath: pathToExtension,
+                headless: true,
+                args: ['--disable-infobars', '--no-sandbox', '--disable-setuid-sandbox']
+            });
             this.imageGenerator = new ImageGenerator(browser);
         } else {
             this.imageGenerator = new Proxy({}, {
@@ -108,7 +108,7 @@ class Bot {
         let bot = this;
         this.jx3api_ws.handleMessageStack.push(async (message) => {
             message = JSON.parse(message);
-            if (message.type == 2001 && message.data.status == 1) {
+            if (message.type == 2011 && message.data.status == 1) {
                 let broadcast_msg = `咕咕咕！[${message.data.server}]开服啦！`;
                 for (let cqhttp of bot.cqhttps) {
                     let groups = await cqhttp.getGroupList();
@@ -119,7 +119,7 @@ class Bot {
                     }
                 }
             }
-            if (message.type == 2002) {
+            if (message.type == 2012) {
                 let broadcast_msg = `咕咕咕！[${message.data.date}]有新的[${message.data.type}]请查收！\n标题：${message.data.title}\n链接：${message.data.url}`;
                 for (let cqhttp of bot.cqhttps) {
                     let groups = await cqhttp.getGroupList();
@@ -130,7 +130,7 @@ class Bot {
                     }
                 }
             }
-            if (message.type == 2003) {
+            if (message.type == 2000) {
                 let broadcast_msg = `咕咕咕！${message.data.serendipity} 被 ${message.data.name} 抱回家啦~`;
                 for (let cqhttp of bot.cqhttps) {
                     let groups = await cqhttp.getGroupList();
@@ -139,6 +139,17 @@ class Bot {
                             if (!group.group_serendipity_broadcast || (group.group_serendipity_broadcast && group.members.indexOf(message.data.name) > -1)) {
                                 cqhttp.sendGroupMessage(broadcast_msg, group.group_id);
                             }
+                        }
+                    }
+                }
+            }
+            if (message.type == 2003) {
+                let broadcast_msg = `咕咕咕！${message.data.server} 扶摇九天开启了~ 黑鬼们别去了，反正不会出`;
+                for (let cqhttp of bot.cqhttps) {
+                    let groups = await cqhttp.getGroupList();
+                    for (let group of groups) {
+                        if (group.news_broadcast) {
+                            cqhttp.sendGroupMessage(broadcast_msg, group.group_id);
                         }
                     }
                 }
