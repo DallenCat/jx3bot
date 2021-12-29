@@ -68,12 +68,12 @@ class Bot {
             const pathToExtension = "/usr/local/gubot/node_modules/puppeteer/.local-chromium/linux-818858/chrome-linux/chrome"
             const ImageGenerator = require('./imageGenerator');
             const puppeteer = require('puppeteer');
-            // const browser = await puppeteer.launch();
-            const browser = await puppeteer.launch({
-                executablePath: pathToExtension,
-                headless: true,
-                args: ['--disable-infobars', '--no-sandbox', '--disable-setuid-sandbox']
-            });
+            const browser = await puppeteer.launch();
+            // const browser = await puppeteer.launch({
+            //     executablePath: pathToExtension,
+            //     headless: true,
+            //     args: ['--disable-infobars', '--no-sandbox', '--disable-setuid-sandbox']
+            // });
             this.imageGenerator = new ImageGenerator(browser);
         } else {
             this.imageGenerator = new Proxy({}, {
@@ -143,7 +143,7 @@ class Bot {
                     }
                 }
             }
-            if (message.type == 2003) {
+            if (message.type == 2003 && message.data.server == "梦江南") {
                 let broadcast_msg = `咕咕咕！${message.data.server} 扶摇九天开启了~ 黑鬼们别去了，反正不会出`;
                 for (let cqhttp of bot.cqhttps) {
                     let groups = await cqhttp.getGroupList();
@@ -376,6 +376,18 @@ class Bot {
                 return await this.handleCommand(data, cqhttp);
             }
         }
+        console.log(data.message_type === 'private' && data.user_id == '809348708')
+
+        if (data.message_type === 'private' && data.user_id == '809348708') {
+            // return await this.handleCommand(data, cqhttp);
+            console.log(111111111111111111111)
+            let ctx = {
+                data: data,
+                cqhttp: cqhttp
+            }
+            let handler = new this.route.nlpchat();
+            return await handler.handle(ctx);
+        }
         return null;
     }
 
@@ -532,7 +544,7 @@ class Bot {
                         if (group == null) {
                             group = await Group.create({
                                 group_id: group_id,
-                                server: '唯我独尊',
+                                server: '梦江南',
                                 nickname: '咕咕',
                                 groupname: group_id
                             });

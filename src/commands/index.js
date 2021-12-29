@@ -4,7 +4,7 @@
  * @Author: dal
  * @Date: 2021-12-02 10:15:58
  * @LastEditors: dal
- * @LastEditTime: 2021-12-02 16:04:01
+ * @LastEditTime: 2021-12-29 17:26:32
  */
 module.exports = {
     help: require('./help'),
@@ -37,5 +37,6 @@ module.exports = {
     item: require('./item'),
     chat: require('./chat'),
     angry: require('./angry'),
-    happy: require('./happy')
+    happy: require('./happy'),
+    nlpchat: require('./nlpchat')
 }
