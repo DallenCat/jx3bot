@@ -6,3 +6,5 @@ storage/audios/*
 !storage/images/index.png
 !storage/audios/index.mp3
 .history
+env.json
+env.example.json
