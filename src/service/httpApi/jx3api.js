@@ -95,10 +95,12 @@ class Jx3api {
 
     static async nlpchat(nickname, question) {
         let response = await $jx3api.get('/share/nlpchat', {
-            "secretId": ENV.tecentcloud_secretid,
-            "secretKey": ENV.tecentcloud_secretkey,
-            "name": nickname,
-            "question": question
+            params: {
+                "secretId": ENV.tecentcloud_secretid,
+                "secretKey": ENV.tecentcloud_secretkey,
+                "name": nickname,
+                "question": question
+            }
         });
         if (response.data.code == 200) {
             let result = response.data.data.answer;

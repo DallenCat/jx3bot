@@ -4,7 +4,7 @@
  * @Author: dal
  * @Date: 2021-12-02 10:15:58
  * @LastEditors: dal
- * @LastEditTime: 2021-12-29 17:17:41
+ * @LastEditTime: 2021-12-30 17:11:57
  */
 const axios = require('axios');
 const md5 = require('js-md5');
@@ -28,7 +28,7 @@ class Api {
         }
     }
     static async getStaticImage() {
-        let files = fs.readdirSync(__dirname + "../../../storage/emojis")
+        let files = fs.readdirSync(`${__dirname}/../../storage/emojis`)
         let max = files.length
         let random = Math.floor(Math.random() * (0 - max) + max);
         return __dirname + `../../../storage/emojis/${files[random]}`

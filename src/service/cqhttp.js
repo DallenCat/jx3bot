@@ -4,7 +4,7 @@
  * @Author: dal
  * @Date: 2021-12-02 10:15:58
  * @LastEditors: dal
- * @LastEditTime: 2021-12-29 17:19:10
+ * @LastEditTime: 2021-12-30 16:23:40
  */
 const Websocket = require('./websocket');
 const url = require('url');
@@ -27,7 +27,6 @@ class CqHttp {
                 let request = JSON.parse(message);
                 let result = await cqhttp.bot.handleRequest(request, cqhttp);
                 console.log(result)
-
                 //object
                 if (typeof result == 'object') {
                     cqhttp.send(result);

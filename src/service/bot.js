@@ -4,6 +4,7 @@ const moment = require('moment');
 class Bot {
     constructor(ENV) {
         this.ENV = ENV;
+        this.count = 0; //计数器，当大于3时自动发一个图片或者骚话
     }
 
     log(message, type) {
@@ -68,12 +69,12 @@ class Bot {
             const pathToExtension = "/usr/local/gubot/node_modules/puppeteer/.local-chromium/linux-818858/chrome-linux/chrome"
             const ImageGenerator = require('./imageGenerator');
             const puppeteer = require('puppeteer');
-            const browser = await puppeteer.launch();
-            // const browser = await puppeteer.launch({
-            //     executablePath: pathToExtension,
-            //     headless: true,
-            //     args: ['--disable-infobars', '--no-sandbox', '--disable-setuid-sandbox']
-            // });
+            // const browser = await puppeteer.launch();
+            const browser = await puppeteer.launch({
+                executablePath: pathToExtension,
+                headless: true,
+                args: ['--disable-infobars', '--no-sandbox', '--disable-setuid-sandbox']
+            });
             this.imageGenerator = new ImageGenerator(browser);
         } else {
             this.imageGenerator = new Proxy({}, {
@@ -207,7 +208,7 @@ class Bot {
                             bot_id: request.self_id,
                             group_id: request.group_id,
                             groupname: request.group_id,
-                            server: '唯我独尊'
+                            server: '梦江南'
                         });
                     }
                     //接受申请
@@ -233,7 +234,7 @@ class Bot {
                             bot_id: request.self_id,
                             group_id: request.group_id,
                             groupname: request.group_id,
-                            server: '唯我独尊'
+                            server: '梦江南'
                         });
                     }
                     if (group.accept_join_group != null) {
@@ -277,6 +278,8 @@ class Bot {
     }
 
     async handleMessage(data, cqhttp) {
+        this.count++
+        let env = this.ENV.cqhttp_websockets[0];
         if (data.group_id) {
             data.switchs = await this.checkFunctionSwitch(data.group_id);
             if (!data.switchs.convenient) {
@@ -376,11 +379,7 @@ class Bot {
                 return await this.handleCommand(data, cqhttp);
             }
         }
-        console.log(data.message_type === 'private' && data.user_id == '809348708')
-
-        if (data.message_type === 'private' && data.user_id == '809348708') {
-            // return await this.handleCommand(data, cqhttp);
-            console.log(111111111111111111111)
+        if (data.message_type === 'private' || data.message.indexOf(`CQ:at,qq=${env.qq}`) > -1) {
             let ctx = {
                 data: data,
                 cqhttp: cqhttp
@@ -388,6 +387,18 @@ class Bot {
             let handler = new this.route.nlpchat();
             return await handler.handle(ctx);
         }
+        else if (this.count > 99) {
+            let random = Math.floor(Math.random() * (0 - 2) + 2) //0斗图，1骚话
+            this.count = 0
+            let ctx = {
+                data: data,
+                cqhttp: cqhttp
+            }
+            let handler = random == 0 ? new this.route.doutu() : new this.route.saohua();
+            return await handler.handle(ctx);
+        }
+
+
         return null;
     }
 
@@ -425,10 +436,10 @@ class Bot {
                         if (group != null) {
                             value = group.server;
                         } else {
-                            value = '唯我独尊'
+                            value = '梦江南'
                         }
                     } else {
-                        value = '唯我独尊'
+                        value = '梦江南'
                     }
                 }
 
