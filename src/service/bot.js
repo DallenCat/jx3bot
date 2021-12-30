@@ -69,12 +69,12 @@ class Bot {
             const pathToExtension = "/usr/local/gubot/node_modules/puppeteer/.local-chromium/linux-818858/chrome-linux/chrome"
             const ImageGenerator = require('./imageGenerator');
             const puppeteer = require('puppeteer');
-            // const browser = await puppeteer.launch();
-            const browser = await puppeteer.launch({
-                executablePath: pathToExtension,
-                headless: true,
-                args: ['--disable-infobars', '--no-sandbox', '--disable-setuid-sandbox']
-            });
+            const browser = await puppeteer.launch();
+            // const browser = await puppeteer.launch({
+            //     executablePath: pathToExtension,
+            //     headless: true,
+            //     args: ['--disable-infobars', '--no-sandbox', '--disable-setuid-sandbox']
+            // });
             this.imageGenerator = new ImageGenerator(browser);
         } else {
             this.imageGenerator = new Proxy({}, {
@@ -379,7 +379,8 @@ class Bot {
                 return await this.handleCommand(data, cqhttp);
             }
         }
-        if (data.message_type === 'private' || data.message.indexOf(`CQ:at,qq=${env.qq}`) > -1) {
+        let need_reply = [`CQ:at,qq=${env.qq}`, "咕咕", "siri", "Siri"]
+        if (data.message_type === 'private' || need_reply.some(v => data.message.indexOf(v) > -1)) {
             let ctx = {
                 data: data,
                 cqhttp: cqhttp
