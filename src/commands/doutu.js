@@ -12,8 +12,6 @@ const CqHttp = require('../service/cqhttp');
 module.exports = class DouTuHandler {
     async handle() {
         let doutu = await Api.getStaticImage();
-        // let doutu = require("../../storage/emojis/1.jpg")
-        // console.log(doutu)
         return CqHttp.imageCQCode(doutu);
     }
 

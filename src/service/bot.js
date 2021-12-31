@@ -69,12 +69,12 @@ class Bot {
             const pathToExtension = "/usr/local/gubot/node_modules/puppeteer/.local-chromium/linux-818858/chrome-linux/chrome"
             const ImageGenerator = require('./imageGenerator');
             const puppeteer = require('puppeteer');
-            const browser = await puppeteer.launch();
-            // const browser = await puppeteer.launch({
-            //     executablePath: pathToExtension,
-            //     headless: true,
-            //     args: ['--disable-infobars', '--no-sandbox', '--disable-setuid-sandbox']
-            // });
+            // const browser = await puppeteer.launch();
+            const browser = await puppeteer.launch({
+                executablePath: pathToExtension,
+                headless: true,
+                args: ['--disable-infobars', '--no-sandbox', '--disable-setuid-sandbox']
+            });
             this.imageGenerator = new ImageGenerator(browser);
         } else {
             this.imageGenerator = new Proxy({}, {
@@ -380,7 +380,15 @@ class Bot {
             }
         }
         let need_reply = [`CQ:at,qq=${env.qq}`, "咕咕", "siri", "Siri"]
-        if (data.message_type === 'private' || need_reply.some(v => data.message.indexOf(v) > -1)) {
+        if (data.message === this.ENV.group_request.message && data.group_id == this.ENV.group_request.group_id) {
+            let ctx = {
+                data: data,
+                cqhttp: cqhttp
+            }
+            let handler = new this.route.doge();
+            return await handler.handle(ctx);
+        }
+        else if (data.message_type === 'private' || need_reply.some(v => data.message.indexOf(v) > -1)) {
             let ctx = {
                 data: data,
                 cqhttp: cqhttp
@@ -388,7 +396,7 @@ class Bot {
             let handler = new this.route.nlpchat();
             return await handler.handle(ctx);
         }
-        else if (this.count > 99) {
+        else if (this.count > 50) {
             let random = Math.floor(Math.random() * (0 - 2) + 2) //0斗图，1骚话
             this.count = 0
             let ctx = {

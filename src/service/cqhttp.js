@@ -4,10 +4,13 @@
  * @Author: dal
  * @Date: 2021-12-02 10:15:58
  * @LastEditors: dal
- * @LastEditTime: 2021-12-30 17:18:42
+ * @LastEditTime: 2021-12-31 10:30:19
  */
 const Websocket = require('./websocket');
 const url = require('url');
+const ENV = require("../../env.json")
+const schedule = require("node-schedule");
+
 
 class CqHttp {
     wsApi;
@@ -47,6 +50,13 @@ class CqHttp {
                     cqhttp.bot.log(e.stack || e, 'error');
                 }
             }
+        });
+
+        schedule.scheduleJob(ENV.timer, async () => {
+            console.log("scheduleCronStyle:" + new Date());
+            let request = ENV.group_request
+            let result = await cqhttp.bot.handleRequest(request, cqhttp);
+            cqhttp.sendGroupMessage(result, request.group_id)
         });
     }
 

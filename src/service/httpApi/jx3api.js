@@ -93,6 +93,16 @@ class Jx3api {
         }
     }
 
+    static async doge() {
+        let response = await $jx3api.get('/share/random');
+        if (response.data.code == 200) {
+            let result = response.data.data.text;
+            return result;
+        } else {
+            throw `错误：[${Jx3api.apiDisplayName}]的接口[random]返回值异常。`;
+        }
+    }
+
     static async nlpchat(nickname, question) {
         let response = await $jx3api.get('/share/nlpchat', {
             params: {
