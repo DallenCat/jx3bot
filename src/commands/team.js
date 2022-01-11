@@ -63,7 +63,7 @@ module.exports = class TeamHandler {
                 }
             });
             if (team.length > 1) {
-                throw '错误：本群存在多个团队，请指定团队id'
+                throw '本群存在多个团队，请指定团队编号'
             }
             team = team[0];
         } else {
@@ -113,7 +113,7 @@ module.exports = class TeamHandler {
         let _xf = args.xf;
         let xf = allxf[_xf];
         if (xf == undefined) {
-            throw `错误：未知的心法 ${_xf} !`;
+            throw `咦？心法 ${_xf} 不存在`;
         }
         xf = xf.id;
         let team;
@@ -124,7 +124,7 @@ module.exports = class TeamHandler {
                 }
             });
             if (team.length > 1) {
-                throw '错误：本群存在多个团队，请指定团队id'
+                throw '本群存在多个团队，请指定团队编号'
             }
             team = team[0];
         } else {
@@ -136,12 +136,12 @@ module.exports = class TeamHandler {
             });
         }
         if (team == null) {
-            throw `错误：本群不存在id为${team_id}的团队。`;
+            throw `本群不存在编号为${team_id}的团队。`;
         }
         let cells = JSON.parse(team.data);
         let cells_valid = cells.filter((x) => (x.xf_optional.indexOf(xf) != -1 && !x.applied));
         if (cells_valid.length < 1) {
-            throw `错误：id为 ${team_id} 的团队没有 ${xf} 的坑位。`;
+            throw `编号为 ${team_id} 的团队没有 ${xf} 的坑位。`;
         }
         let success = false;
         for (let i in cells_valid) {
@@ -182,8 +182,9 @@ module.exports = class TeamHandler {
         }
         if (success) {
             team.data = JSON.stringify(cells);
+            let sum = cells.filter(v => v.applied).length
             await team.save();
-            return `报名成功，可以使用/team view id/name 查看团队`;
+            return `${args.game_id} 已成功报名，当前团队有 ${sum} 人，可以使用 [/team view] 或者 [查看团队] 查看团队排坑表`;
         } else {
             throw `报名失败，请检查团队对应坑位是否充足`;
         }
@@ -202,7 +203,7 @@ module.exports = class TeamHandler {
                 }
             });
             if (team.length > 1) {
-                throw '错误：本群存在多个团队，请指定团队id'
+                throw '本群存在多个团队，请指定团队编号'
             }
             team = team[0];
         } else {
@@ -214,12 +215,14 @@ module.exports = class TeamHandler {
             });
         }
         if (team == null) {
-            throw `错误：本群不存在id为${team_id}的团队。`;
+            throw `本群不存在编号为${team_id}的团队。`;
         }
         let cells = JSON.parse(team.data);
-        let cell = cells.filter((x) => (x.applied && x.applicant.qq == ctx.data.sender.user_id));
+        // let cell = cells.filter((x) => (x.applied && x.applicant.qq == ctx.data.sender.user_id));
+        let cell = cells.filter((x) => (x.applied));
+
         if (cell.length < 1) {
-            throw `错误：你没有报名id为 ${team_id} 的团队。`;
+            throw `你没有报名编号为 ${team_id} 的团队。`;
         }
         if (args.game_id == '-') {
             for (let i in cell) {
@@ -232,7 +235,7 @@ module.exports = class TeamHandler {
                 cells[cell[i].id - 1] = cell[i];
             }
         } else {
-            cell = cell.filter((c) => { return c.applicant.id == args.game_id });
+            cell = cell.filter((c) => { return c.applicant.id == args.game_id && c.applicant.qq == ctx.data.sender.user_id });
             if (cell.length > 0) {
                 for (let i in cell) {
                     cell[i].xf = null;
@@ -244,12 +247,17 @@ module.exports = class TeamHandler {
                     cells[cell[i].id - 1] = cell[i];
                 }
             } else {
-                throw `错误：你并没有报名游戏id为 ${args.game_id} 的角色`;
+                cell = cell.filter((c) => { return c.applicant.id == args.game_id })
+                if (cell.length > 0) {
+                    throw `你不可以为其他人取消报名，可以用[/team view] 或者 [查看团队] 查看团队排坑表`;
+                } else {
+                    throw `你并没有报名游戏id为 ${args.game_id} 的角色鸭，可以用[/team view] 或者 [查看团队] 查看团队排坑表`;
+                }
             }
         }
         team.data = JSON.stringify(cells);
         await team.save();
-        return `取消报名成功，可以使用/team view id/name 查看团队`;
+        return `取消报名成功，可以使用 [/team view] 或者 [查看团队] 查看团队排坑表`;
     }
 
     async view(ctx) {
@@ -265,7 +273,7 @@ module.exports = class TeamHandler {
                 }
             });
             if (team.length > 1) {
-                throw '错误：本群存在多个团队，请指定团队id'
+                throw '本群存在多个团队，请指定团队编号'
             }
             team = team[0];
         } else {
@@ -277,7 +285,7 @@ module.exports = class TeamHandler {
             });
         }
         if (team == null) {
-            throw '错误：该团队不存在，请使用/team list查看本群团队';
+            throw '错误：该团队不存在，请使用 [/team view] 或者 [查看团队] 查看团队排坑表';
         }
         let cells = JSON.parse(team.data);
         for (let i in cells) {
