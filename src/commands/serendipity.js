@@ -6,6 +6,7 @@ const CqHttp = require('../service/cqhttp');
 
 module.exports = class SerendipityHandler {
     async handle(ctx) {
+        console.log(ctx)
         //get args from state
         let args = ctx.args;
         let redis_key = JSON.stringify('Serendipity:' + JSON.stringify(args));

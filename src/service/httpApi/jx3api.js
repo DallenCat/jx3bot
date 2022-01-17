@@ -83,6 +83,42 @@ class Jx3api {
         }
     }
 
+    static async require(params) {
+        let response = await $jx3api.get('/app/require', {
+            params: params
+        })
+        if (response.data.code == 200) {
+            let result = response.data.data.upload;
+            return result;
+        } else {
+            throw `错误：[${Jx3api.apiDisplayName}]的接口[require]返回值异常。`;
+        }
+    }
+
+    static async equip(params) {
+        let response = await $jx3api.get('/app/equip', {
+            params: params
+        })
+        if (response.data.code == 200) {
+            let result = response.data.data;
+            return result;
+        } else {
+            throw `错误：[${Jx3api.apiDisplayName}]的接口[equip]返回值异常。`;
+        }
+    }
+
+    static async strategy(params) {
+        let response = await $jx3api.get('/app/strategy', {
+            params: params
+        })
+        if (response.data.code == 200) {
+            let result = response.data.data.url;
+            return result;
+        } else {
+            throw `错误：[${Jx3api.apiDisplayName}]的接口[strategy]返回值异常。`;
+        }
+    }
+
     static async saohua() {
         let response = await $jx3api.get('/app/random');
         if (response.data.code == 200) {
